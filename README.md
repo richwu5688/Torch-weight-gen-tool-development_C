@@ -1,9 +1,11 @@
-## 檔案怎麼放的
+## 檔案怎麼放的/進度
 C_test存直行一維參數 測試推論輸出放C_test/test_output
 
 convert_array_vertical.py 補沒在python跑main.py時被改到一維儲存的
 
 quant_verify中save_array_to_txt尾部沒加底線的是原先儲存方法(包含 '[' 或 ',') 依需求切換
+
+進度: 抓資料型態不對，DW運算邏輯還是怪的
 
 ## 📌 注意事項
 
