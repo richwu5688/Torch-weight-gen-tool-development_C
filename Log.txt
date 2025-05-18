@@ -1,0 +1,214 @@
+Python 3.9.19 (main, May  6 2024, 20:12:36) [MSC v.1916 64 bit (AMD64)]
+Type "copyright", "credits" or "license" for more information.
+
+IPython 8.15.0 -- An enhanced Interactive Python.
+
+runfile('E:/m11202101/pytorch_test_4090/SGD_C3D_DSC2_Lite_reshape_FP32/train.py', wdir='E:/m11202101/pytorch_test_4090/SGD_C3D_DSC2_Lite_reshape_FP32')
+Reloaded modules: pydevd_plugins.extensions, pydevd_plugins.pydevd_line_validation, pydevd_plugins.django_debug, pydevd_plugins.jinja2_debug, pydevd_plugins.extensions.types, pydevd_plugins.extensions.types.pydevd_helpers, pydevd_plugins.extensions.types.pydevd_plugin_numpy_types, pydevd_plugins.extensions.types.pydevd_plugin_pandas_types, pydevd_plugins.extensions.types.pydevd_plugins_django_form_str, pydevd_plugins.extensions.pydevd_plugin_omegaconf
+Device being used: cuda:0
+Training model on ucf101 dataset...
+Training ver4_C3D_DSC2_Lite_FP32 from scratch...
+Total params: 4.87M
+----------------------------------------------------------------
+        Layer (type)               Output Shape         Param #
+================================================================
+            Conv3d-1        [-1, 3, 16, 56, 56]              84
+              ReLU-2        [-1, 3, 16, 56, 56]               0
+         MaxPool3d-3        [-1, 3, 16, 28, 28]               0
+            Conv3d-4       [-1, 64, 16, 28, 28]             256
+              ReLU-5       [-1, 64, 16, 28, 28]               0
+            Conv3d-6       [-1, 64, 16, 28, 28]           1,792
+              ReLU-7       [-1, 64, 16, 28, 28]               0
+         MaxPool3d-8        [-1, 64, 8, 14, 14]               0
+            Conv3d-9       [-1, 128, 8, 14, 14]           8,320
+             ReLU-10       [-1, 128, 8, 14, 14]               0
+           Conv3d-11       [-1, 128, 8, 14, 14]           3,584
+             ReLU-12       [-1, 128, 8, 14, 14]               0
+        MaxPool3d-13         [-1, 128, 4, 7, 7]               0
+           Conv3d-14         [-1, 256, 4, 7, 7]          33,024
+             ReLU-15         [-1, 256, 4, 7, 7]               0
+           Conv3d-16         [-1, 256, 4, 7, 7]           7,168
+             ReLU-17         [-1, 256, 4, 7, 7]               0
+        MaxPool3d-18         [-1, 256, 2, 4, 4]               0
+           Conv3d-19         [-1, 512, 2, 4, 4]         131,584
+             ReLU-20         [-1, 512, 2, 4, 4]               0
+           Conv3d-21         [-1, 512, 2, 4, 4]          14,336
+             ReLU-22         [-1, 512, 2, 4, 4]               0
+        MaxPool3d-23         [-1, 512, 1, 2, 2]               0
+           Conv3d-24         [-1, 512, 1, 2, 2]         262,656
+             ReLU-25         [-1, 512, 1, 2, 2]               0
+           Linear-26                 [-1, 2048]       4,196,352
+             ReLU-27                 [-1, 2048]               0
+          Dropout-28                 [-1, 2048]               0
+           Linear-29                  [-1, 101]         206,949
+================================================================
+Total params: 4,866,105
+Trainable params: 4,866,105
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 0.57
+Forward/backward pass size (MB): 36.35
+Params size (MB): 18.56
+Estimated Total Size (MB): 55.49
+----------------------------------------------------------------
+C3D(
+  (conv1_dw): Conv3d(3, 3, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=3)
+  (relu1_dw): ReLU()
+  (pool1): MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2), padding=0, dilation=1, ceil_mode=False)
+  (conv1_pw): Conv3d(3, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu1_pw): ReLU()
+  (conv2_dw): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64)
+  (relu2_dw): ReLU()
+  (pool2): MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=0, dilation=1, ceil_mode=False)
+  (conv2_pw): Conv3d(64, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu2_pw): ReLU()
+  (conv3a_dw): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128)
+  (relu3a_dw): ReLU()
+  (pool3): MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=0, dilation=1, ceil_mode=False)
+  (conv3a_pw): Conv3d(128, 256, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu3a_pw): ReLU()
+  (conv4a_dw): Conv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=256)
+  (relu4a_dw): ReLU()
+  (pool4): MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 1, 1), dilation=1, ceil_mode=False)
+  (conv4a_pw): Conv3d(256, 512, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu4a_pw): ReLU()
+  (conv5a_dw): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=512)
+  (relu5a_dw): ReLU()
+  (pool5): MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=0, dilation=1, ceil_mode=False)
+  (conv5a_pw): Conv3d(512, 512, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu5a_pw): ReLU()
+  (fc6): Linear(in_features=2048, out_features=2048, bias=True)
+  (relu6): ReLU()
+  (fc7): Linear(in_features=2048, out_features=101, bias=True)
+  (dropout): Dropout(p=0.5, inplace=False)
+)
+  0%|          | 0/529 [00:07<?, ?it/s]
+Traceback (most recent call last):
+
+  File D:\anaconda\envs\pytorch\lib\site-packages\spyder_kernels\py3compat.py:356 in compat_exec
+    exec(code, globals, locals)
+
+  File e:\m11202101\pytorch_test_4090\sgd_c3d_dsc2_lite_reshape_fp32\train.py:216
+    train_model()
+
+  File e:\m11202101\pytorch_test_4090\sgd_c3d_dsc2_lite_reshape_fp32\train.py:161 in train_model
+    for inputs, labels in tqdm(trainval_loaders[phase]):
+
+  File D:\anaconda\envs\pytorch\lib\site-packages\tqdm\std.py:1181 in __iter__
+    for obj in iterable:
+
+  File D:\anaconda\envs\pytorch\lib\site-packages\torch\utils\data\dataloader.py:440 in __iter__
+    return self._get_iterator()
+
+  File D:\anaconda\envs\pytorch\lib\site-packages\torch\utils\data\dataloader.py:388 in _get_iterator
+    return _MultiProcessingDataLoaderIter(self)
+
+  File D:\anaconda\envs\pytorch\lib\site-packages\torch\utils\data\dataloader.py:1038 in __init__
+    w.start()
+
+  File D:\anaconda\envs\pytorch\lib\multiprocessing\process.py:121 in start
+    self._popen = self._Popen(self)
+
+  File D:\anaconda\envs\pytorch\lib\multiprocessing\context.py:224 in _Popen
+    return _default_context.get_context().Process._Popen(process_obj)
+
+  File D:\anaconda\envs\pytorch\lib\multiprocessing\context.py:327 in _Popen
+    return Popen(process_obj)
+
+  File D:\anaconda\envs\pytorch\lib\multiprocessing\popen_spawn_win32.py:93 in __init__
+    reduction.dump(process_obj, to_child)
+
+  File D:\anaconda\envs\pytorch\lib\multiprocessing\reduction.py:60 in dump
+    ForkingPickler(file, protocol).dump(obj)
+
+KeyboardInterrupt
+
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "D:\anaconda\envs\pytorch\lib\multiprocessing\spawn.py", line 116, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "D:\anaconda\envs\pytorch\lib\multiprocessing\spawn.py", line 126, in _main
+    self = reduction.pickle.load(from_parent)
+EOFError: Ran out of input
+
+runfile('E:/m11202101/pytorch_test_4090/SGD_C3D_DSC2_Lite_reshape_FP32/train.py', wdir='E:/m11202101/pytorch_test_4090/SGD_C3D_DSC2_Lite_reshape_FP32')
+Reloaded modules: mypath, network.ver4_C3D_DSC2_Lite_FP32, network.R2Plus1D_model, network.R3D_model, dataloaders.dataset
+Device being used: cuda:0
+Training model on ucf101 dataset...
+Training ver4_C3D_DSC2_Lite_FP32 from scratch...
+Total params: 4.87M
+----------------------------------------------------------------
+        Layer (type)               Output Shape         Param #
+================================================================
+            Conv3d-1        [-1, 3, 16, 56, 56]              84
+              ReLU-2        [-1, 3, 16, 56, 56]               0
+         MaxPool3d-3        [-1, 3, 16, 28, 28]               0
+            Conv3d-4       [-1, 64, 16, 28, 28]             256
+              ReLU-5       [-1, 64, 16, 28, 28]               0
+            Conv3d-6       [-1, 64, 16, 28, 28]           1,792
+              ReLU-7       [-1, 64, 16, 28, 28]               0
+         MaxPool3d-8        [-1, 64, 8, 14, 14]               0
+            Conv3d-9       [-1, 128, 8, 14, 14]           8,320
+             ReLU-10       [-1, 128, 8, 14, 14]               0
+           Conv3d-11       [-1, 128, 8, 14, 14]           3,584
+             ReLU-12       [-1, 128, 8, 14, 14]               0
+        MaxPool3d-13         [-1, 128, 4, 7, 7]               0
+           Conv3d-14         [-1, 256, 4, 7, 7]          33,024
+             ReLU-15         [-1, 256, 4, 7, 7]               0
+           Conv3d-16         [-1, 256, 4, 7, 7]           7,168
+             ReLU-17         [-1, 256, 4, 7, 7]               0
+        MaxPool3d-18         [-1, 256, 2, 4, 4]               0
+           Conv3d-19         [-1, 512, 2, 4, 4]         131,584
+             ReLU-20         [-1, 512, 2, 4, 4]               0
+           Conv3d-21         [-1, 512, 2, 4, 4]          14,336
+             ReLU-22         [-1, 512, 2, 4, 4]               0
+        MaxPool3d-23         [-1, 512, 1, 2, 2]               0
+           Conv3d-24         [-1, 512, 1, 2, 2]         262,656
+             ReLU-25         [-1, 512, 1, 2, 2]               0
+           Linear-26                 [-1, 2048]       4,196,352
+             ReLU-27                 [-1, 2048]               0
+          Dropout-28                 [-1, 2048]               0
+           Linear-29                  [-1, 101]         206,949
+================================================================
+Total params: 4,866,105
+Trainable params: 4,866,105
+Non-trainable params: 0
+----------------------------------------------------------------
+Input size (MB): 0.57
+Forward/backward pass size (MB): 36.35
+Params size (MB): 18.56
+Estimated Total Size (MB): 55.49
+----------------------------------------------------------------
+C3D(
+  (conv1_dw): Conv3d(3, 3, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=3)
+  (relu1_dw): ReLU()
+  (pool1): MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2), padding=0, dilation=1, ceil_mode=False)
+  (conv1_pw): Conv3d(3, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu1_pw): ReLU()
+  (conv2_dw): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64)
+  (relu2_dw): ReLU()
+  (pool2): MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=0, dilation=1, ceil_mode=False)
+  (conv2_pw): Conv3d(64, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu2_pw): ReLU()
+  (conv3a_dw): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128)
+  (relu3a_dw): ReLU()
+  (pool3): MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=0, dilation=1, ceil_mode=False)
+  (conv3a_pw): Conv3d(128, 256, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu3a_pw): ReLU()
+  (conv4a_dw): Conv3d(256, 256, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=256)
+  (relu4a_dw): ReLU()
+  (pool4): MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=(0, 1, 1), dilation=1, ceil_mode=False)
+  (conv4a_pw): Conv3d(256, 512, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu4a_pw): ReLU()
+  (conv5a_dw): Conv3d(512, 512, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=512)
+  (relu5a_dw): ReLU()
+  (pool5): MaxPool3d(kernel_size=(2, 2, 2), stride=(2, 2, 2), padding=0, dilation=1, ceil_mode=False)
+  (conv5a_pw): Conv3d(512, 512, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (relu5a_pw): ReLU()
+  (fc6): Linear(in_features=2048, out_features=2048, bias=True)
+  (relu6): ReLU()
+  (fc7): Linear(in_features=2048, out_features=101, bias=True)
+  (dropout): Dropout(p=0.5, inplace=False)
+)
+ 11%|█         | 58/529 [00:30<01:40,  4.67it/s] 
