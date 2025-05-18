@@ -5,7 +5,13 @@ convert_array_vertical.py 補沒在python跑main.py時被改到一維儲存的
 
 quant_verify中save_array_to_txt尾部沒加底線的是原先儲存方法(包含 '[' 或 ',') 依需求切換
 
-進度: 抓資料型態不對，DW運算邏輯還是怪的
+### 進度: 
+
+在Conv3D1D1C.c
+
+抓資料型態不對，DW運算邏輯還是怪的
+
+infaa.c是LLM寫的 做C語法教學
 
 ## 📌 注意事項
 
