@@ -22,4 +22,15 @@ def convert_txt_vertical(input_file_path, output_file_path):
             except ValueError:
                 continue
 
-convert_txt_vertical("./input/input.txt", "./input/input_.txt")
+#convert_txt_vertical("./input/input.txt", "./input/input_.txt")
+
+a=1000
+b=24142
+
+a=a^b
+print(a)
+b=a^b
+print(b)
+a=a^b
+print(a)
+print(b)

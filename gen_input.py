@@ -58,6 +58,6 @@ def save_array_to_txt(array, filename: str):
 
 def save_input():
     # (1,3,16,56,56)
-    input = torch.randint(low=254, high=255, size=(1, 3, 16, 56, 56))
+    input = torch.randint(low=0, high=255, size=(1, 3, 16, 56, 56))
     torch.save(input, "./input/input.pt")
     save_array_to_txt(input, "./input/input.txt")
