@@ -427,10 +427,19 @@ int main() {
     write_output_to_file("./C_test/output/output.txt", output, batch_size, out_channels, out_depth, out_height, out_width);
     
     // 釋放記憶體
-    free(input);
-    free(weights);
-    free(bias);
-    free(output);
+    free(input_params);
+    free(input_data);
+    free(weight_data);
+    free(conv1_dw_weight);
+    free(conv1_dw_weight_scale);
+    free(conv1_dw_weight_zero_point);
+    free(conv1_dw_bias);
+    free(conv1_dw_scale);
+    free(conv1_dw_zero_point);
+    free(quant_scale);
+    free(quant_zero_point);
+    free(conv1_dw_output);
+
     
     return 0;
 }
