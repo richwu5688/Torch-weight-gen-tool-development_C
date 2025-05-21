@@ -110,6 +110,80 @@ typedef struct {
     int output_zero_point;
 } QuantParams;
 
+void conv3d_1d_array(
+    const unsigned char* input,
+    const char* weights,
+    const int* bias,
+    unsigned char* output,
+    int batch_size, int in_channels, int in_depth, int in_height, int in_width,
+    int out_channels, int out_depth, int out_height, int out_width,
+    int kernel_d, int kernel_h, int kernel_w,
+    int stride_d, int stride_h, int stride_w,
+    int padding_d, int padding_h, int padding_w,
+    const QuantParams* quant_params) {
+    
+    // 遍歷輸出體積的每個元素
+    for (int b = 0; b < batch_size; b++) {
+        for (int oc = 0; oc < out_channels; oc++) {
+            for (int od = 0; od < out_depth; od++) {
+                for (int oh = 0; oh < out_height; oh++) {
+                    for (int ow = 0; ow < out_width; ow++) {
+                        // 計算輸出索引
+                        int output_idx = get_5d_index(b, oc, od, oh, ow, 
+                                         batch_size, out_channels, out_depth, out_height, out_width);
+                        
+                        // 累積值
+                        int acc = bias[oc];
+                        
+                        // 對每個輸入通道和卷積核位置進行計算
+                        for (int ic = 0; ic < in_channels; ic++) {
+                            for (int kd = 0; kd < kernel_d; kd++) {
+                                for (int kh = 0; kh < kernel_h; kh++) {
+                                    for (int kw = 0; kw < kernel_w; kw++) {
+                                        // 計算對應的輸入位置
+                                        int id = od * stride_d + kd - padding_d;
+                                        int ih = oh * stride_h + kh - padding_h;
+                                        int iw = ow * stride_w + kw - padding_w;
+                                        
+                                        // 檢查邊界
+                                        if (id >= 0 && id < in_depth &&
+                                            ih >= 0 && ih < in_height &&
+                                            iw >= 0 && iw < in_width) {
+                                            
+                                            // 計算輸入和權重索引
+                                            int input_idx = get_5d_index(b, ic, id, ih, iw,
+                                                            batch_size, in_channels, in_depth, in_height, in_width);
+                                            int weight_idx = get_3d_kernel_index(kd, kh, kw, kernel_d, kernel_h, kernel_w) +
+                                                            (oc * in_channels + ic) * kernel_d * kernel_h * kernel_w;
+                                            
+                                            // 反量化, 計算
+                                            int input_val = input[input_idx] - quant_params->input_zero_point;
+                                            int weight_val = weights[weight_idx] - quant_params->weight_zero_point;
+                                            
+                                            // 累積乘積
+                                            acc += input_val * weight_val;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // 重新量化結果
+                        float rescale = (quant_params->input_scale * quant_params->weight_scale) / quant_params->output_scale;
+                        int out_val = (int)((float)acc * rescale) + quant_params->output_zero_point;
+                        
+                        // 確保結果在有效範圍內
+                        if (out_val < 0) out_val = 0;
+                        if (out_val > 255) out_val = 255;
+                        
+                        output[output_idx] = (unsigned char)out_val;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void conv3d_depthwise_1d_array(
     const unsigned char* input,
     const char* weights,
@@ -202,7 +276,7 @@ int main() {
     int* conv1_dw_weight_scale = NULL;
     int* conv1_dw_weight_zero_point = NULL;
 
-    int* conv1_dw_bias = NULL;
+    int* conv1_dw_bias = NULL;//
     int* conv1_dw_scale = NULL;
     int* conv1_dw_zero_point = NULL;
 
