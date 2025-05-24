@@ -2,27 +2,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_DIM 5
-#define INPUT_DIM_1 56
-#define INPUT_DIM_2 56
-#define INPUT_DIM_3 16
-#define INPUT_DIM_4 3
-#define INPUT_DIM_5 1
-
-int read_txt(const char* filepath, void* data_out) {
+int* read_txt(const char* filepath, int* total_size) {
     FILE* file = fopen(filepath, "r");
     if (!file) {
         printf("無法開啟檔案：%s\n", filepath);
-        return -1;
+        *total_size = 0;
+        return NULL;
     }
 
-    int capacity = 128;
+    int capacity = 64;
     int size = 0;
     int* data = (int*)malloc(capacity * sizeof(int));
     if (!data) {
         printf("記憶體配置失敗\n");
         fclose(file);
-        return -1;
+        *total_size = 0;
+        return NULL;
     }
 
     int num;
@@ -34,7 +29,8 @@ int read_txt(const char* filepath, void* data_out) {
                 printf("記憶體重新配置失敗\n");
                 free(data);
                 fclose(file);
-                return -1;
+                *total_size = 0;
+                return NULL;
             }
             data = new_data;
         }
@@ -42,27 +38,25 @@ int read_txt(const char* filepath, void* data_out) {
     }
 
     fclose(file);
-    
-    // 將結果存入 data_out (不論是 int** 還是 char**)
-    *((int**)data_out) = data;
-    
-    return size;
+    *total_size = size;    
+    return data;
 }
 
-int read_txt_float(const char* filepath, float** data_out) {
+float* read_txt_float(const char* filepath, int* total_size) {
     FILE* file = fopen(filepath, "r");
     if (!file) {
         printf("無法開啟檔案：%s\n", filepath);
-        return -1;
+        return NULL;
     }
 
-    int capacity = 128;
+    int capacity = 64;
     int size = 0;
     float* data = (float*)malloc(capacity * sizeof(float));
     if (!data) {
         printf("記憶體配置失敗\n");
         fclose(file);
-        return -1;
+        *total_size = 0;
+        return NULL;
     }
 
     float num;
@@ -74,7 +68,8 @@ int read_txt_float(const char* filepath, float** data_out) {
                 printf("記憶體重新配置失敗\n");
                 free(data);
                 fclose(file);
-                return -1;
+                *total_size = 0;
+                return NULL;
             }
             data = new_data;
         }
@@ -82,8 +77,8 @@ int read_txt_float(const char* filepath, float** data_out) {
     }
 
     fclose(file);
-    *data_out = data;
-    return size;
+    *total_size = size;
+    return data;
 }
 
 int get_5d_index(int b, int c, int d, int h, int w,
@@ -115,13 +110,10 @@ void conv3d_1d_array(
     const char* weights,
     const int* bias,
     unsigned char* output,
-    int batch_size, int in_channels, int in_depth, int in_height, int in_width,
-    int out_channels, int out_depth, int out_height, int out_width,
-    int kernel_d, int kernel_h, int kernel_w,
-    int stride_d, int stride_h, int stride_w,
-    int padding_d, int padding_h, int padding_w,
-    const QuantParams* quant_params) {
-    
+    int in_batch, int in_channel, int in_depth, int in_height, int in_width,
+    int out_channels,
+    int kernelSize, int padding)
+    {
     // 遍歷輸出體積的每個元素
     for (int b = 0; b < batch_size; b++) {
         for (int oc = 0; oc < out_channels; oc++) {
@@ -188,22 +180,19 @@ void conv3d_depthwise_1d_array(
     const unsigned char* input,
     const char* weights,
     const int* bias,
-    unsigned char* output,
-    int batch_size, int channels, int in_depth, int in_height, int in_width,
+    int* output,
+    int in_batch, int in_channel, int in_depth, int in_height, int in_width,
     int out_depth, int out_height, int out_width,
-    int kernel_d, int kernel_h, int kernel_w,
-    int stride_d, int stride_h, int stride_w,
-    int padding_d, int padding_h, int padding_w,
-    int depth_multiplier,  // 每個輸入通道的輸出通道數量
-    const QuantParams* quant_params) {
+    int kernelSize, int padding=0, int padding_value=0)
+    {
     
     // 注意: Depthwise捲積總輸出通道數 = 輸入通道數 * depth_multiplier
-    int out_channels = channels * depth_multiplier;
+    int out_channels = in_channel * depth_multiplier;
     
     // 遍歷輸出體積的每個元素
-    for (int b = 0; b < batch_size; b++) {
+    for (int b = 0; b < in_batch; b++) {
         // 處理每個輸入通道
-        for (int ic = 0; ic < channels; ic++) {
+        for (int ic = 0; ic < in_channel; ic++) {
             // 每個輸入通道對應depth_multiplier個輸出通道
             for (int m = 0; m < depth_multiplier; m++) {
                 // 計算當前輸出通道索引
@@ -213,7 +202,7 @@ void conv3d_depthwise_1d_array(
                         for (int ow = 0; ow < out_width; ow++) {
                             // 計算輸出索引
                             int output_idx = get_5d_index(b, oc, od, oh, ow, 
-                                             batch_size, out_channels, out_depth, out_height, out_width);
+                                             in_batch, out_channels, out_depth, out_height, out_width);
                             
                             // 累積值 (應用偏置)
                             int acc = bias[oc];
@@ -233,7 +222,7 @@ void conv3d_depthwise_1d_array(
                                             
                                             // 計算輸入索引 - 只考慮當前通道
                                             int input_idx = get_5d_index(b, ic, id, ih, iw,
-                                                            batch_size, channels, in_depth, in_height, in_width);
+                                                            in_batch, in_channel, in_depth, in_height, in_width);
                                             
                                             // 計算權重索引 - 注意權重索引的計算方式
                                             // 在depthwise中，每個輸入通道有自己的kernel集合
@@ -265,68 +254,59 @@ void conv3d_depthwise_1d_array(
     }
 }
 
+int clampInt(int val, int min, int max) {
+    if (val < min) return min;
+    if (val > max) return max;
+    return val;
+}
+
 int main() {
     
     //---------------------------- get params ----------------------
-    int* input_params = NULL;
-    float* quant_scale = NULL;
-    int* quant_zero_point = NULL;
+    int total_size;
+
+    int* input_params = read_txt("./C_test/input/input_.txt", &total_size);
+    float* quant_scale = read_txt_float("./C_test/weight/quant.scale.txt", &total_size);
+    int* quant_zero_point = read_txt("./C_test/weight/quant.zero_point.txt", &total_size);
     
-    int* conv1_dw_weight = NULL;
-    int* conv1_dw_weight_scale = NULL;
-    int* conv1_dw_weight_zero_point = NULL;
-
-    int* conv1_dw_bias = NULL;//
-    int* conv1_dw_scale = NULL;
-    int* conv1_dw_zero_point = NULL;
-
-    int input_size = read_txt("./C_test/input/input_.txt", &input_params);
-    int quant_size = read_txt_float("./C_test/weight/quant.scale.txt", &quant_scale);
-    int quant_zero_point_size = read_txt("./C_test/weight/quant.zero_point.txt", &quant_zero_point);
-    int weight_size = read_txt("./C_test/weight/conv1_dw.weight.txt", &conv1_dw_weight);
-    int weight_scale_size = read_txt("./C_test/weight/conv1_dw.weight_scale.txt", &conv1_dw_weight_scale);
-    int weight_zero_point_size = read_txt("./C_test/weight/conv1_dw.weight_zero_points.txt", &conv1_dw_weight_zero_point);
-    int bias_size = read_txt("./C_test/weight/conv1_dw.bias.txt", &conv1_dw_bias);
-    int bias_scale_size = read_txt("./C_test/weight/conv1_dw.scale.txt", &conv1_dw_scale);
-    int bias_zero_point_size = read_txt("./C_test/weight/conv1_dw.zero_point.txt", &conv1_dw_zero_point);
+    int* conv1_dw_weight = read_txt("./C_test/weight/conv1_dw.weight.txt", &total_size);
+    int* conv1_dw_bias = read_txt("./C_test/weight/conv1_dw.bias.txt", &total_size);
+    int* conv1_pw_weight = read_txt("./C_test/weight/conv1_pw.weight.txt", &total_size);
+    int* conv1_pw_bias = read_txt("./C_test/weight/conv1_pw.bias.txt", &total_size);
     
-    printf("\n部分輸入參數 (input_params):\n");
-    int max_display = 100; // 最多顯示100個值
-    int display_count = (input_size < max_display) ? input_size : max_display;
-    
-    for (int i = 0; i < display_count; i++) {
-        printf("%d ", input_params[i]);
-        if ((i + 1) % 10 == 0) printf("\n"); // 每10個數值換行一次
-    }
+    int* conv2_dw_weight = read_txt("./C_test/weight/conv2_dw.weight.txt", &total_size);
+    int* conv2_dw_bias = read_txt("./C_test/weight/conv2_dw.bias.txt", &total_size);
+    int* conv2_pw_weight = read_txt("./C_test/weight/conv2_pw.weight.txt", &total_size);
+    int* conv2_pw_bias = read_txt("./C_test/weight/conv2_pw.bias.txt", &total_size);
 
-    printf("\n\n部分權重參數 (conv1_dw_weight):\n");
-    display_count = (weight_size < max_display) ? weight_size : max_display;
-    for (int i = 0; i < display_count; i++) {
-        printf("%d ", conv1_dw_weight[i]);
-        if ((i + 1) % 10 == 0) printf("\n"); // 每10個數值換行一次
-    }
+    int* conv3_dw_weight = read_txt("./C_test/weight/conv3_dw.weight.txt", &total_size);
+    int* conv3_dw_bias = read_txt("./C_test/weight/conv3_dw.bias.txt", &total_size);
+    int* conv3_pw_weight = read_txt("./C_test/weight/conv3_pw.weight.txt", &total_size);
+    int* conv3_pw_bias = read_txt("./C_test/weight/conv3_pw.bias.txt", &total_size);
 
-    printf("\n\n部分量化參數 (quant_scale):\n");
-    display_count = (quant_size < max_display) ? quant_size : max_display;
-    for (int i = 0; i < display_count; i++) {
-        printf("%f", quant_scale[i]);
-        if ((i + 1) % 10 == 0) printf("\n"); // 每10個數值換行一次
-    }
-    printf("\n\n部分量化參數 (quant_zero_point):\n");
-    display_count = (quant_zero_point_size < max_display) ? quant_zero_point_size : max_display;
-    for (int i = 0; i < display_count; i++) {
-        printf("%d ", quant_zero_point[i]);
-        if ((i + 1) % 10 == 0) printf("\n"); // 每10個數值換行一次
-    }
+    int* conv4_dw_weight = read_txt("./C_test/weight/conv4_dw.weight.txt", &total_size);
+    int* conv4_dw_bias = read_txt("./C_test/weight/conv4_dw.bias.txt", &total_size);
+    int* conv4_pw_weight = read_txt("./C_test/weight/conv4_pw.weight.txt", &total_size);
+    int* conv4_pw_bias = read_txt("./C_test/weight/conv4_pw.bias.txt", &total_size);
 
-    printf("\n\n部分偏置參數 (conv1_dw_bias):\n");
-    display_count = (bias_size < max_display) ? bias_size : max_display;
-    for (int i = 0; i < display_count; i++) {
-        printf("%d ", conv1_dw_bias[i]);
-        if ((i + 1) % 10 == 0) printf("\n"); // 每10個數值換行一次
+    int* conv5_dw_weight = read_txt("./C_test/weight/conv5_dw.weight.txt", &total_size);
+    int* conv5_dw_bias = read_txt("./C_test/weight/conv5_dw.bias.txt", &total_size);
+    int* conv5_pw_weight = read_txt("./C_test/weight/conv5_pw.weight.txt", &total_size);
+    int* conv5_pw_bias = read_txt("./C_test/weight/conv5_pw.bias.txt", &total_size);
+
+    int* fc6_weight = read_txt("./C_test/weight/fc6._packed_params._packed_params_weight.txt", &total_size);
+    int* fc6_bias = read_txt("./C_test/weight/fc6._packed_params._packed_params_bias.txt", &total_size);
+    int* fc7_weight = read_txt("./C_test/weight/fc7._packed_params._packed_params_weight.txt", &total_size);
+    int* fc7_bias = read_txt("./C_test/weight/fc7._packed_params._packed_params_bias.txt", &total_size);
+    int* fc8_weight = read_txt("./C_test/weight/fc8._packed_params._packed_params_weight.txt", &total_size);
+    int* fc8_bias = read_txt("./C_test/weight/fc8._packed_params._packed_params_bias.txt", &total_size);
+
+    //========================== get params ==========================
+
+    for(int i=0; i<length(input_params); i++){
+        input_params[i] = clampInt(round((float)input_params[i] / quant_scale[0] + quant_zero_point[0]), 0, 127); // clampInt(0,127)
+        //printf("%d ", input[i]);
     }
-
-
 
 
     /*
